@@ -1,0 +1,8 @@
+SongInfo/
+Library/
+Release/
+Logs/
+obj/
+.vscode/
+Temp/
+

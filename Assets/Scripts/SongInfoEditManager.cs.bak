@@ -1,0 +1,196 @@
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+using DG.Tweening;
+
+public class SongInfoEditManager : MonoBehaviour
+{
+    public static SongInfoEditManager Instance { get; private set; }
+    private void Awake()
+    {
+        Instance = this;
+    }
+
+	private void Start()
+	{
+		if(View)
+		{
+			var t = View.GetComponent<CanvasGroup>();
+			if(!t) View.AddComponent<CanvasGroup>();
+		    t.alpha = 0;
+			t.interactable = false;
+			View.SetActive(false);
+		}
+	}
+
+    [HideInInspector]
+    public SongInfoJson currentInfo;
+
+	[Header("Main")]
+	public GameObject View;
+
+    [Header("Song Info")]
+    public InputField TitleEdit;
+    public InputField ArtistEdit;
+    public Toggle EnableDiffToggle;
+    public Toggle EnableCustomDiffToggle;
+    public InputField CustomDiffEdit;
+    public InputField RatingClassEdit;
+    public InputField RatingEdit;
+    public Toggle EnableRatingPlusToggle;
+
+    [Header("Cover and Background")]
+    public InputField BackgroundPathEdit;
+    public InputField CoverPathEdit;
+
+	[Header("Diff")]
+	public Image TargetDiffImg;
+
+	private Color[] DiffColor = new Color[4]
+	{
+		("#0A82BE").HexToColor(),
+		("#648C3C").HexToColor(),
+		("#50194B").HexToColor(),
+		("#822328").HexToColor()
+	};
+
+	[HideInInspector]
+	public Color CustomDiffColor;
+
+    public bool IsNull // If any object is null, return true
+    {
+        get
+        {
+            return
+                !TitleEdit ||
+                !ArtistEdit ||
+                !EnableDiffToggle ||
+                !EnableCustomDiffToggle ||
+                !CustomDiffEdit ||
+                !RatingClassEdit ||
+                !RatingEdit ||
+                !BackgroundPathEdit ||
+                !CoverPathEdit;
+        }
+    }
+
+    public void LoadCurrentInfo(SongInfoJson info)
+    {
+        currentInfo = info;
+        LoadInfo();
+    }
+
+    public void LoadInfo()
+    {
+        if (IsNull) return; // If get bool 'IsNull' is true, return
+        var info = currentInfo;
+        TitleEdit.text = info.Title;
+        ArtistEdit.text = info.Artist;
+        EnableDiffToggle.isOn = info.EnableDiff;
+        EnableCustomDiffToggle.isOn = info.EnableCustomDiff;
+        CustomDiffEdit.text = info.CustomDiffString;
+        RatingClassEdit.text = info.RatingClass.ToString();
+        RatingEdit.text = info.Rating.ToString();
+		CustomDiffColor = info.CustomDiffColor.HexToColor();
+		SetDiffColor(info.RatingClass);
+    }
+
+    public void SaveAndReload() // Save current info to SongInfoScenecontrol.SongInfoJson then write and reload
+    {
+        SongInfoScenecontrol.Instance.SongInfoJson = currentInfo;
+        SongInfoScenecontrol.Instance.WriteJson();
+        SongInfoScenecontrol.Instance.SetInfoByJson();
+    }
+
+    public void Reset()
+    {
+        currentInfo = new SongInfoJson();
+    }
+
+	public void ShowView()
+	{
+		View.SetActive(true);
+	}
+
+	public void OpenInfoFolder()
+	{
+		
+	}
+
+    // Edit part
+    public void EditTitle(InputField input)
+    {
+        currentInfo.Title = input.text;
+    }
+
+    public void EditArtist(InputField input)
+    {
+        currentInfo.Artist = input.text;
+    }
+
+    public void EditEnableDiff(Toggle toggle)
+    {
+        currentInfo.EnableDiff = toggle.isOn;
+    }
+
+    public void EditEnableCustomDiff(Toggle toggle)
+    {
+        currentInfo.EnableCustomDiff = toggle.isOn;
+    }
+
+    public void EditCustomDiff(InputField input)
+    {
+        currentInfo.CustomDiffString = input.text;
+    }
+
+    public void EditRatingClass(InputField input)
+    {
+        try
+        {
+            int ratingClass = int.Parse(input.text);
+            ratingClass = Mathf.Clamp(ratingClass, 0, 4);
+            currentInfo.RatingClass = ratingClass;
+            input.text = ratingClass.ToString();
+			SetDiffColor(ratingClass);
+        }
+        catch
+        {
+            input.text = currentInfo.RatingClass.ToString();
+        }
+    }
+
+    public void EditRating(InputField input)
+    {
+        try
+        {
+            currentInfo.Rating = int.Parse(input.text);
+        }
+        catch
+        {
+            input.text = currentInfo.Rating.ToString();
+        }
+    }
+
+    public void EditEnableRatingPlus(Toggle toggle)
+    {
+        currentInfo.RatingPlus = toggle.isOn;
+    }
+
+    public void EditBackgroundPath(InputField input)
+    {
+        currentInfo.BackgroundPath = input.text;
+    }
+
+    public void EditCoverPath(InputField input)
+    {
+        currentInfo.CoverPath = input.text;
+    }
+
+	// Other methods
+	public void SetDiffColor(int index)
+	{
+		if(DiffColor.OutOfRange(index)) return;
+		TargetDiffImg.color = DiffColor[index];
+	}
+}

@@ -1,0 +1,11 @@
+{
+    "name": "Maker",
+    "references": [
+        "Maker.Util",
+        "Maker.Project"
+    ],
+    "optionalUnityReferences": [],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false
+}
